@@ -110,12 +110,19 @@ def state_value(state):
     return heuristic
 
 
-def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
-    if empty_spaces == 0:
-        return state_value(state), state
+def get_input(user_input):
+    row = user_input.split(" ")[0]
+    column = user_input.split(" ")[1]
 
+    return int(row), int(column)
+
+
+def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
     rows_left, columns_left = np.where(state == 0)
     state_to_edit = copy(state)
+
+    if empty_spaces == 0:
+        return state_value(state), state
 
     if rows_left.shape[0] == 0:
         return state_value(state), state_to_edit
@@ -137,6 +144,7 @@ def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
 
             if alpha >= beta:
                 break
+
         return value, state_to_edit
 
     else:
@@ -160,17 +168,11 @@ def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
         return value, state_to_edit
 
 
-def get_input(user_input):
-    row = user_input.split(" ")[0]
-    column = user_input.split(" ")[1]
-
-    return int(row), int(column)
-
-
 def human__vs__ai():
     global grid
     player_on_move = random.randint(1, 3)
     possible_plays = 9
+    new_row, new_column = 0, 0
 
     while possible_plays > 0:
         if player_on_move == 1:
