@@ -1,7 +1,8 @@
 import random
-
 import numpy as np
-from copy import copy
+import copy
+import pygame
+import sys
 
 rows = 3
 columns = 3
@@ -17,6 +18,42 @@ for index in range(0, rows + 1):
 heuristic_table[1, 1] = 10
 heuristic_table[2, 2] = 20
 heuristic_table[2, 0] = 15
+
+pygame.init()
+width, height = 300, 300
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("X O")
+clock = pygame.time.Clock()
+
+
+def draw_board():
+    screen.fill((255, 255, 255))
+
+    cell_size = width // columns
+    line_thickness = 3
+
+    # Draw horizontal lines
+    for i in range(rows + 1):
+        y = i * cell_size
+        pygame.draw.line(screen, (0, 0, 0), (0, y), (width, y), line_thickness)
+
+    # Draw vertical lines and 'X' inputs
+    for i in range(rows):
+        for j in range(columns):
+            x = j * cell_size
+            y = i * cell_size
+
+            pygame.draw.line(screen, (0, 0, 0), (x, 0), (x, height), line_thickness)
+
+            if grid[i, j] == 1:  # 'X'
+                pygame.draw.line(screen, (0, 0, 0), (x + 0.2 * cell_size, y + 0.2 * cell_size),
+                                 (x + 0.8 * cell_size, y + 0.8 * cell_size), line_thickness)
+                pygame.draw.line(screen, (0, 0, 0), (x + 0.2 * cell_size, y + 0.8 * cell_size),
+                                 (x + 0.8 * cell_size, y + 0.2 * cell_size), line_thickness)
+            elif grid[i, j] == 2:  # 'O'
+                pygame.draw.circle(screen, (0, 0, 0), (x + cell_size // 2, y + cell_size // 2),
+                                   cell_size // 2 - int(0.1 * cell_size), line_thickness)
+    pygame.display.flip()
 
 
 def show_board():
@@ -93,7 +130,7 @@ def check_move(row, column):
 
 
 def state_value(state):
-    flaten_state = copy(state.ravel())
+    flaten_state = copy.deepcopy(state.ravel())
     heuristic = 0
 
     for i in range(8):
@@ -117,9 +154,18 @@ def get_input(user_input):
     return int(row), int(column)
 
 
+def empty_fields():
+    count = 0
+    for row in range(3):
+        for column in range(3):
+            if grid[row][column] == 0:
+                count += 1
+    return count
+
+
 def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
     rows_left, columns_left = np.where(state == 0)
-    state_to_edit = copy(state)
+    state_to_edit = copy.deepcopy(state)
 
     if empty_spaces == 0:
         return state_value(state), state
@@ -130,14 +176,14 @@ def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
     if find_max:
         value = _min
         for i in range(rows_left.shape[0]):
-            new_state = copy(state)
+            new_state = copy.deepcopy(state)
             new_state[rows_left[i], columns_left[i]] = ai_value
 
             new_value, _ = minimax(new_state, alpha, beta, False, empty_spaces - 1, ai_value, human_value)
 
             if new_value > value:
                 value = new_value
-                state_to_edit = copy(new_state)
+                state_to_edit = copy.deepcopy(new_state)
 
             if value > alpha:
                 alpha = value
@@ -150,14 +196,14 @@ def minimax(state, alpha, beta, find_max, empty_spaces, ai_value, human_value):
     else:
         value = _max
         for i in range(rows_left.shape[0]):
-            new_state = copy(state)
+            new_state = copy.deepcopy(state)
             new_state[rows_left[i], columns_left[i]] = human_value
 
             new_value, _ = minimax(new_state, alpha, beta, True, empty_spaces - 1, ai_value, human_value)
 
             if new_value < value:
                 value = new_value
-                state_to_edit = copy(new_state)
+                state_to_edit = copy.deepcopy(new_state)
 
             if value < beta:
                 beta = value
@@ -174,7 +220,11 @@ def human__vs__ai():
     possible_plays = 9
     new_row, new_column = 0, 0
 
-    while possible_plays > 0:
+    while possible_plays > 0 and not check_game_over() and empty_fields() != 0:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
         if player_on_move == 1:
             print('Your turn')
             player_on_move = 0
@@ -191,7 +241,8 @@ def human__vs__ai():
                 else:
                     print('Invalid move!')
 
-            show_board()
+            draw_board()
+            # show_board()
 
             if check_game_over():
                 print('Human win')
@@ -205,7 +256,8 @@ def human__vs__ai():
             value, new_state = minimax(state, _min, _max, True, spaces_left, 2, 1)
             grid = np.copy(new_state)
 
-            show_board()
+            draw_board()
+            # show_board()
 
             if check_game_over():
                 print("AI wins")
@@ -216,4 +268,10 @@ def human__vs__ai():
 
 
 if __name__ == "__main__":
-    human__vs__ai()
+    while True:
+        if not check_game_over() and empty_fields() != 0:
+            draw_board()
+            human__vs__ai()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit(0)
