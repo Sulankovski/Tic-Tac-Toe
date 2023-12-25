@@ -19,6 +19,7 @@ heuristic_table[1, 1] = 10
 heuristic_table[2, 2] = 20
 heuristic_table[2, 0] = 15
 
+
 pygame.init()
 width, height = 300, 300
 screen = pygame.display.set_mode((width, height))
@@ -268,10 +269,11 @@ def human__vs__ai():
 
 
 if __name__ == "__main__":
-    while True:
-        if not check_game_over() and empty_fields() != 0:
-            draw_board()
-            human__vs__ai()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit(0)
+    # while True:
+    #     if not check_game_over() and empty_fields() != 0:
+    #         draw_board()
+    #         human__vs__ai()
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 sys.exit(0)
+    print(heuristic_table)
