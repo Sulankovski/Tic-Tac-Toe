@@ -58,10 +58,8 @@ def draw_board():
 
 
 def show_board():
-    # Iterate over each row and column in the board
     for i in range(0, rows):
         for j in range(0, columns):
-            # Print the corresponding symbol based on the value in the board
             if grid[i, j] == 0:
                 print(' _ ', end='')
 
@@ -71,7 +69,6 @@ def show_board():
             else:
                 print(' O ', end='')
 
-        # Move to the next line to print the next row
         print()
 
 
