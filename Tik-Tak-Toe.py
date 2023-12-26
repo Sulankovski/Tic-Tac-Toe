@@ -17,7 +17,7 @@ for index in range(0, rows + 1):
     heuristic_table[0, index] = -2 ** index
 heuristic_table[1, 1] = 10
 heuristic_table[2, 2] = 20
-heuristic_table[2, 0] = 15
+heuristic_table[3, 3] = 15
 
 
 pygame.init()
