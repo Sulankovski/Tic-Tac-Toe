@@ -194,5 +194,5 @@ if __name__ == '__main__':
     print("Choose interface: ")
     print("Choose _ 1 _ for _ pygame _ or _ 2 _ for _ cmd _ interface")
     # num = input()
-    num = 1
+    num = 2
     human__vs__ai__game(interface="pygame") if num == 1 else human__vs__ai__game(interface="cmd")
