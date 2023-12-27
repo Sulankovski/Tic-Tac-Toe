@@ -13,17 +13,31 @@ from helper_func.input import get_input
 rows = 3
 columns = 3
 win_combinations = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]])
+coordinates = {
+    0: (1, 1),
+    1: (1, 2),
+    2: (1, 3),
+    3: (2, 1),
+    4: (2, 2),
+    5: (2, 3),
+    6: (3, 1),
+    7: (3, 2),
+    8: (3, 3)
+}
 _max = float('inf')
 _min = float('-inf')
 grid = np.zeros((rows, columns))
 
 heuristic_table = np.zeros((rows + 1, columns + 1))
-for index in range(0, rows + 1):
-    heuristic_table[index, 0] = 2 ** index
-    heuristic_table[0, index] = -2 ** index
-heuristic_table[1, 1] = 10
-heuristic_table[2, 2] = 20
-heuristic_table[3, 3] = 15
+
+
+def update_heuristic_table():
+    for row in range(rows):
+        for col in range(columns):
+            if grid[row][col] == 1:
+                heuristic_table[row + 1][col + 1] = -10
+            if grid[row][col] == 2:
+                heuristic_table[row + 1][col + 1] = 10
 
 
 def state_value(state: npt.NDArray[np.int16]) -> int:
@@ -32,19 +46,15 @@ def state_value(state: npt.NDArray[np.int16]) -> int:
     :param state: present game state
     :return: best heuristic value
     """
-    flaten_state = copy.deepcopy(state.ravel())
     heuristic = 0
 
     for i in range(8):
-        o_win_occurrences = 0
-        x_win_occurrences = 0
+        sum = 0
         for j in range(3):
-            if flaten_state[win_combinations[i, j]] == 2:
-                o_win_occurrences += 1
-            elif flaten_state[win_combinations[i, j]] == 1:
-                x_win_occurrences += 1
+            sum += heuristic_table[coordinates[j][0]][coordinates[j][1]]
 
-        heuristic += heuristic_table[o_win_occurrences][x_win_occurrences]
+        if sum > heuristic:
+            heuristic = sum
 
     return heuristic
 
@@ -76,7 +86,8 @@ def minimax(state: npt.NDArray[np.int16], alpha: float, beta: float, find_max: b
             new_state = copy.deepcopy(state)
             new_state[rows_left[i], columns_left[i]] = 2
 
-            new_value, _ = minimax(state=new_state, alpha=alpha, beta=beta, find_max=False, empty_spaces=empty_spaces-1)
+            new_value, _ = minimax(state=new_state, alpha=alpha, beta=beta, find_max=False,
+                                   empty_spaces=empty_spaces - 1)
 
             if new_value > value:
                 value = new_value
@@ -96,7 +107,8 @@ def minimax(state: npt.NDArray[np.int16], alpha: float, beta: float, find_max: b
             new_state = copy.deepcopy(state)
             new_state[rows_left[i], columns_left[i]] = 2
 
-            new_value, _ = minimax(state=new_state, alpha=alpha, beta=beta, find_max=True, empty_spaces=empty_spaces-1)
+            new_value, _ = minimax(state=new_state, alpha=alpha, beta=beta, find_max=True,
+                                   empty_spaces=empty_spaces - 1)
 
             if new_value < value:
                 value = new_value
@@ -147,7 +159,8 @@ def human__vs__ai(flag: bool) -> None:
             draw_board(rows=rows, columns=columns, grid=grid) \
                 if flag else (
                 show_board(rows=rows, columns=columns, grid=grid))
-
+            update_heuristic_table()
+            print(f"after human move: {heuristic_table}")
 
             if check_game_over(grid=grid):
                 print('Human win')
@@ -164,6 +177,8 @@ def human__vs__ai(flag: bool) -> None:
             draw_board(rows=rows, columns=columns, grid=grid) \
                 if flag else (
                 show_board(rows=rows, columns=columns, grid=grid))
+            update_heuristic_table()
+            print(f"after AI move: {heuristic_table}")
 
             if check_game_over(grid=grid):
                 print("AI wins")
